@@ -1,0 +1,56 @@
+{
+  "pkgs": {
+    "@citricity/saml-auth": {
+      "entryPoint": "https://example.com",
+      "issuer": "issuer",
+      "sessionSecret": "XXXXXXXXXXXXXXXXXxx"
+    },
+    "@moodlenet/core": {
+      "baseFsFolder": "/home/alec/MOODLENET/repo/community_contrib/moodlenet_my_fork/.dev-machines/1/fs",
+      "instanceDomain": "http://localhost:8080",
+      "npmRegistry": "https://registry.npmjs.org",
+      "mainLogger": {
+        "consoleLevel": "debug",
+        "file": {
+          "path": "./log/moodlenet.%DATE%.log",
+          "level": "debug"
+        }
+      }
+    },
+    "@moodlenet/crypto": {
+      "keys": {
+        "alg": "RS256",
+        "type": "PKCS8",
+        "private": "/home/alec/MOODLENET/repo/community_contrib/moodlenet_my_fork/.dev-machines/default.crypto.privateKey",
+        "public": "/home/alec/MOODLENET/repo/community_contrib/moodlenet_my_fork/.dev-machines/default.crypto.publicKey"
+      }
+    },
+    "@moodlenet/arangodb": {
+      "connectionCfg": {
+        "url": "http://localhost:8529"
+      }
+    },
+    "@moodlenet/http-server": {
+      "port": 8080
+    },
+    "@moodlenet/ed-resource": {
+      "resourceUploadMaxSize": "1.2GB"
+    },
+    "@moodlenet/simple-email-auth": {
+      "newUserNotPublisher": false
+    },
+    "@moodlenet/email-service": {
+      "nodemailerTransport": {
+        "jsonTransport": true
+      }
+    },
+    "@moodlenet/system-entities": {
+      "rootPassword": "root"
+    },
+    "@moodlenet/react-app": {
+      "noWebappServer": true,
+      "noWebappBuilder": true,
+      "defaultImageUploadMaxSize": "5MB"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "moodlenet.1",
+  "version": "1",
+  "creatorVersion": "4.2.1",
+  "scripts": {
+    "start": "node start.mjs"
+  },
+  "dependencies": {
+    "@citricity/saml-auth": "file:/home/alec/MOODLENET/repo/community_contrib/moodlenet_my_fork/packages/@citricity__saml-auth",
+    "@moodlenet/core": "file:/home/alec/MOODLENET/repo/community_contrib/moodlenet_my_fork/packages/core",
+    "@moodlenet/arangodb": "file:/home/alec/MOODLENET/repo/community_contrib/moodlenet_my_fork/packages/arangodb",
+    "@moodlenet/crypto": "file:/home/alec/MOODLENET/repo/community_contrib/moodlenet_my_fork/packages/crypto",
+    "@moodlenet/http-server": "file:/home/alec/MOODLENET/repo/community_contrib/moodlenet_my_fork/packages/http-server",
+    "@moodlenet/organization": "file:/home/alec/MOODLENET/repo/community_contrib/moodlenet_my_fork/packages/organization",
+    "@moodlenet/system-entities": "file:/home/alec/MOODLENET/repo/community_contrib/moodlenet_my_fork/packages/system-entities",
+    "@moodlenet/email-service": "file:/home/alec/MOODLENET/repo/community_contrib/moodlenet_my_fork/packages/email-service",
+    "@moodlenet/react-app": "file:/home/alec/MOODLENET/repo/community_contrib/moodlenet_my_fork/packages/react-app",
+    "@moodlenet/extensions-manager": "file:/home/alec/MOODLENET/repo/community_contrib/moodlenet_my_fork/packages/extensions-manager",
+    "@moodlenet/simple-email-auth": "file:/home/alec/MOODLENET/repo/community_contrib/moodlenet_my_fork/packages/simple-email-auth",
+    "@moodlenet/openid": "file:/home/alec/MOODLENET/repo/community_contrib/moodlenet_my_fork/packages/openid",
+    "@moodlenet/ed-resource": "file:/home/alec/MOODLENET/repo/community_contrib/moodlenet_my_fork/packages/ed-resource",
+    "@moodlenet/collection": "file:/home/alec/MOODLENET/repo/community_contrib/moodlenet_my_fork/packages/collection",
+    "@moodlenet/web-user": "file:/home/alec/MOODLENET/repo/community_contrib/moodlenet_my_fork/packages/web-user",
+    "@moodlenet/ed-meta": "file:/home/alec/MOODLENET/repo/community_contrib/moodlenet_my_fork/packages/ed-meta",
+    "@moodlenet/moodle-lms-integration": "file:/home/alec/MOODLENET/repo/community_contrib/moodlenet_my_fork/packages/moodle-lms-integration"
+  }
+}

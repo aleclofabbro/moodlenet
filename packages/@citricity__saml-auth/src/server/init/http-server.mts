@@ -9,10 +9,7 @@ shell.call(mountApp)({
   getApp: function getHttpApp(express) {
     const app = express();
 
-    const configPath = `${process.cwd()}/default.config.json`;
-    const configStr = fs.readFileSync(configPath, 'utf8');
-    const configFull = JSON.parse(configStr);
-    const { entryPoint, issuer, sessionSecret } = configFull.pkgs['@citricity/saml-auth'];
+    const { entryPoint, issuer, sessionSecret } = shell.config
     const certPath = `${process.cwd()}/saml.cert`;
     const certStr = fs.readFileSync(certPath, 'utf8');
     const cert = certStr.replace('-----BEGIN CERTIFICATE-----', '')

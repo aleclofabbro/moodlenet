@@ -1,0 +1,8 @@
+compare your package folder with the fixed one here (`packages/@citricity__saml-auth`)
+you'll see some minor fixes in code
+and in package.json about dep|engine versioning
+
+here, in `./my_working_dev_machine_folder` you see how my working `.dev-machine` looks like (except `node_modules`)
+check `package.json`: I addded your package folder, and run `npm i` to install it
+
+Notice, I also added your package to root's `package.json` `"prj-build"` script !
