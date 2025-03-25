@@ -1,11 +1,12 @@
-import { LogSeverity, logLevelColors, logLevelMap, loggerContext, loggerProvider } from '@moodle/domain'
-import { _any } from '@moodle/lib-types'
+import { logLevelColors, logLevelMap, logSeverity, logger, loggerContext, loggerProvider } from '@moodle/domain'
+import { any_, d_u__d, redact_stringify, unsupportedProxyHandler } from '@moodle/lib-types'
+import assert from 'assert'
 import { inspect } from 'util'
-import winston from 'winston'
+import winston, { Logform } from 'winston'
 import DailyRotateFile from 'winston-daily-rotate-file'
 
 export type winstonLoggerConfigs = {
-  consoleLevel?: LogSeverity
+  consoleLevel: logSeverity
   file?: {
     path: string
     level: string
@@ -18,13 +19,11 @@ export function createWinstonDomainLoggerProvider({ loggerConfigs }: { loggerCon
   const winstonLogger = winston.createLogger({
     transports: [
       new winston.transports.Console({
-        level: loggerConfigs.consoleLevel ?? 'info',
+        level: loggerConfigs.consoleLevel,
         format: winston.format.combine(
           winston.format.timestamp(),
           winston.format.colorize({ colors: logLevelColors, message: false }),
-          winston.format.printf(extended_loggerContext => {
-            return ctxString(extended_loggerContext as extended_loggerContext)
-          }),
+          winston.format.printf(_info => format(_info as loggerContext & Logform.TransformableInfo)),
         ),
       }),
     ],
@@ -41,10 +40,8 @@ export function createWinstonDomainLoggerProvider({ loggerConfigs }: { loggerCon
           format: winston.format.combine(
             winston.format.padLevels(),
             winston.format.timestamp(),
-            winston.format.uncolorize(),
-            winston.format.printf(extended_loggerContext => {
-              return ctxString(extended_loggerContext as extended_loggerContext)
-            }),
+            winston.format.colorize({ colors: logLevelColors, message: false }),
+            winston.format.printf(_info => format(_info as loggerContext & Logform.TransformableInfo)),
           ),
         }),
       ],
@@ -52,46 +49,89 @@ export function createWinstonDomainLoggerProvider({ loggerConfigs }: { loggerCon
 
   const loggerProvider: loggerProvider = loggerContext => {
     const childLogger = winstonLogger.child(loggerContext)
-    return (level, ...args) => {
-      const message = args
-        .map((arg: unknown) => {
-          return typeof arg === 'object' ? inspect(arg, { colors: true, depth: 8 }) : arg
-        })
-        .join('\n')
-      childLogger.log(level, message)
-    }
+    return new Proxy({} as logger, {
+      ...unsupportedProxyHandler,
+      get(_target, level) {
+        assert(typeof level === 'string', `Unsupported log level ${typeof level}: ${String(level)}`)
+        return (...args: any_[]) => {
+          const message = args
+            .map((arg: unknown) => {
+              return typeof arg === 'object' ? inspect(_redact(arg), { breakLength: 120, colors: true, depth: 8 }) : arg
+            })
+            .join('\n')
+          childLogger.log(level, message)
+        }
+      },
+    })
   }
+
   return { loggerProvider }
 }
-type extended_loggerContext = loggerContext & { level: string; message: _any; timestamp: _any }
-function ctxString({
-  level,
-  message,
-  timestamp,
-  domain,
-  moduleName,
-  id,
-  contextLayer,
-  //
-  originEndpoint,
-  callerContext,
-  primarySessionId,
-  endpoint,
-  enqueue,
-}: extended_loggerContext) {
-  const NOT_AVAILABLE_CHAR = '~'
+const default_inspect_opts = { breakLength: 300, maxStringLength: 600, colors: true, depth: 8 }
+function format(info: loggerContext & Logform.TransformableInfo) {
   return `
-${timestamp} [${level}]
-  domain            : ${domain}
-  moduleName        : ${moduleName}
-  context           : ${contextLayer} # ${id}
-  endpoint          : ${(endpoint ?? [NOT_AVAILABLE_CHAR]).join('.')}
-  primarySessionId  : ${primarySessionId ?? NOT_AVAILABLE_CHAR}
-  callerContext     : ${callerContext ? `${callerContext.layer}.${callerContext.moduleName} # ${callerContext.ctxId}` : NOT_AVAILABLE_CHAR}
-  originEndpoint    : ${(originEndpoint ?? [NOT_AVAILABLE_CHAR]).join('.')}
-  enqueued          : ${enqueue ?? false}
+- - - - - - - - - -
+${info.timestamp}
+${info.level} [${info.for}]
+${loggerContextFormatter[info.for](info as any_)}
+${info.more ? `more: ${inspect(info.more, default_inspect_opts)}\n` : ''}
+${info.message}
+- - - - - - - - - -
+`
+}
 
-${message}
+const loggerContextFormatter = {
+  core(c: d_u__d<loggerContext, 'for', 'core'>) {
+    const { branchPath } = c
+    const { id, userPoliciesInfo, now, gateRequest } = c.request
+    return `Core Access:
+id: ${id}
+branchPath: ${branchPath.join('.')}
+now: ${now}
+sessionInfo:
+  user: ${userPoliciesInfo.user.type}${
+    userPoliciesInfo.user.type === 'anon'
+      ? ''
+      : `
+    id: ${userPoliciesInfo.user.id}${'' /*  session personas: ${Object.keys(policiesInfo.tree)} */}`
+  }
+gateRequest:
+  path: ${gateRequest.path.join('.')}
+  claims: ${inspect(gateRequest.info.claims, default_inspect_opts)}
+  form: ${inspect(_redact(gateRequest.form), default_inspect_opts)}`
+  },
+  model(c: d_u__d<loggerContext, 'for', 'model'>) {
+    const { callTime, id, now, message, origin, path, opType } = c.envelope
+    return `Model Access:
+id: ${id}
+path: ${path.join('.')}
+type: ${opType}
+callTime: ${callTime} (now: ${now})
+origin:
+  gate: ${inspect(origin.request, { colors: true })}
+  from:
+    ${
+      origin.model ? inspect(origin.model, default_inspect_opts) : '~'
+      /*from: ${
+    origin.from
+      ? `
+    id: ${origin.from.id}
+    target:
+      opName: ${origin.from.target.opName}
+      type: ${origin.from.target.type}
+      path: ${origin.from.target.path.join('.')}`
+      : '~'*/
+    }
+message: ${inspect(_redact(message), { breakLength: 120, maxStringLength: 3000, colors: true, depth: 8 })}`
+  },
+  infra(c: d_u__d<loggerContext, 'for', 'infra'>) {
+    return `[${c.name}]`
+  },
+  setup(c: d_u__d<loggerContext, 'for', 'setup'>) {
+    return `[${c.name}]`
+  },
+}
 
----`
+function _redact(o: any_) {
+  return o && JSON.parse(redact_stringify(o))
 }

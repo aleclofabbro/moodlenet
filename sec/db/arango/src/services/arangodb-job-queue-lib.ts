@@ -1,4 +1,4 @@
-import { domainAccess } from '@moodle/domain'
+import '@moodle/domain'
 import {
   enqueueJob,
   fetchAndEngageSomeEnqueuedJobs,
@@ -8,7 +8,7 @@ import {
   reEnqueueTimedoutInProgressJobs,
   updateJob,
 } from '@moodle/lib-job-queue-service'
-import { unreachable_never } from '@moodle/lib-types'
+import { any_, unreachable_never } from '@moodle/lib-types'
 import { aql } from 'arangojs'
 import { literal } from 'arangojs/aql'
 import { DocumentCollection } from 'arangojs/collection'
@@ -16,12 +16,8 @@ import assert from 'assert'
 import { dbStruct } from '../db-structure'
 export type jobCollection<jobData> = DocumentCollection<Omit<job<jobData>, 'id'>>
 
-export function provideArangoQueueServiceWorkers({
-  dbStruct,
-}: {
-  dbStruct: dbStruct
-}): queueServiceWorkers<{ domainAccess: domainAccess }> {
-  const jobCollection = dbStruct.services.coll.domainAccessJob
+export function provideArangoQueueServiceWorkers({ dbStruct }: { dbStruct: dbStruct }): queueServiceWorkers<{ envelope: moo.def.model.envelope<any_> }> {
+  const jobCollection = dbStruct.services.coll.modelEnvelopeQueue
   return {
     enqueueJob: arangoEnqueueJob({ jobCollection }),
     updateJob: updateJob({ jobCollection }),
